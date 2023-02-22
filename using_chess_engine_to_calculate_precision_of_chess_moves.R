@@ -1,3 +1,4 @@
+#installing needed packages
 install.packages("devtools") 
 install.packages("bigchess")
 install.packages("dplyr")
@@ -8,9 +9,11 @@ library(dplyr)
 
 rm(list = ls())
 
-setwd("/Users/franciszekkaczmarek/Desktop/Praca licencjacka/Algorytm/1 Podejście/Dane")
-engine_path <- "/opt/homebrew/Cellar/stockfish/15/bin/stockfish"
-PlayerNames <-c("Carlsen, Magnus", "Nepomniachtchi, Ian", "Ding, Liren")
+
+#set working directory 
+setwd("your_working_directory")
+engine_path <- "path_to_chess_enginge_you_will_be_using"
+PlayerNames <-c("names_of_players")
 listpgn <- dir(pattern = "*.pgn")
 
 for (k in 1:length(listpgn)){
@@ -24,6 +27,7 @@ player <- as.data.frame(player)
 player <- player[,c("Event","EventType","White","WhiteElo","Black","BlackElo","Result","Movetext")]
 player[,"Movetext"] <- clean_movetext(player[,"Movetext"])
 PlayerToAnalyseElo <- rep(NA, nrow(player))
+#assigning black or white pices to analysed player
 for (i in 1:nrow(player)){
   if (player$White[i]==PlayerNames[k]) {
     PlayerToAnalyseElo[i] <- player$WhiteElo[i]
@@ -43,9 +47,11 @@ PlayerToAnalyseACPL <- rep(NA, nrow(player))
 OpponentACPL <- rep(NA, nrow(player))
 player <- data.frame(player$Event, player$EventType, player$White, player$Black, PlayerToAnalyseElo, PlayerToAnalyseACPL, 
                      OpponentElo, OpponentACPL, player$Result, player$Movetext)
+#taking complete records basen on 2 columns
 player <- player [complete.cases(player[, c(2,5)]),]
-
+#arranging data
 player <- arrange(player, player.EventType, PlayerToAnalyseElo)
+#subsetting data
 player_clasical <- subset(player, player.EventType=="team" | player.EventType=="match" | player.EventType=="team-swiss" | 
                             player.EventType=="tourn" | player.EventType=="swiss" | player.EventType=="k.o." | player.EventType=="game" | 
                             player.EventType=="team-schev" | player.EventType=="schev" | player.EventType=="team-tourn" | 
@@ -64,14 +70,16 @@ player_blitz <- arrange(player_blitz, PlayerToAnalyseElo)
 #creating ACPL for player which we are analyzing and his opponent
 ##clasical
 nc <- nrow(player_clasical)
+#this process takes long time so creating a progressbar was in place
 pb <- txtProgressBar(min = 0, max = nc, style = 3)
-
+#analysing chess game with stockfish enginge and calculating ACPL
 for (i in 1:nc) {
   Sys.sleep(0.1)
   gamelog <- evaluate_game(player_clasical[i,10], engine_path, limiter = 'nodes',
                            limit = 2250000, mute = TRUE)
   scores <- unlist(parse_gamelog(gamelog, 'score'))
   evals <- convert_scores(scores)
+  #assigning ACPL values to players depending on if they played with White or Balck pices 
   if (player_clasical$player.White[i]==PlayerNames[k]) {
     player_clasical$PlayerToAnalyseACPL[i] <- get_acpl(evals, 'white', cap = 1000, cap_action = 'replace')
   } else {player_clasical$PlayerToAnalyseACPL[i] <- get_acpl(evals, 'black', cap = 1000, cap_action = 'replace')
@@ -80,10 +88,11 @@ for (i in 1:nc) {
     player_clasical$OpponentACPL[i] <- get_acpl(evals, 'white', cap = 1000, cap_action = 'replace')
   } else {player_clasical$OpponentACPL[i] <- get_acpl(evals, 'black', cap = 1000, cap_action = 'replace')
   }
+  #updating progress bar
   setTxtProgressBar(pb, i)
 }
-
-write.csv(player_clasical, paste0("/Users/franciszekkaczmarek/Desktop/Praca licencjacka/Algorytm/1 Podejście/Dane/Dane1/", PlayerNames[k],"_classical",".csv"))
+#writing a csv file
+write.csv(player_clasical, paste0("path_to_the_folder_you_want_to_save_this_file", PlayerNames[k],"_classical",".csv"))
 
 ##rapid
 nr <- nrow(player_rapid)
@@ -105,7 +114,7 @@ for (i in 1:nr) {
   setTxtProgressBar(pb1, i)
 }
 
-write.csv(player_rapid, paste0("/Users/franciszekkaczmarek/Desktop/Praca licencjacka/Algorytm/1 Podejście/Dane/Dane1/", PlayerNames[k],"_rapid",".csv"))
+write.csv(player_rapid, paste0("path_to_the_folder_you_want_to_save_this_file", PlayerNames[k],"_rapid",".csv"))
 
 ##blitz
 nb <- nrow(player_blitz)
@@ -127,7 +136,7 @@ for (i in 1:nb) {
   setTxtProgressBar(pb2, i)
 }
 
-write.csv(player_blitz, paste0("/Users/franciszekkaczmarek/Desktop/Praca licencjacka/Algorytm/1 Podejście/Dane/Dane1/", PlayerNames[k],"_blitz",".csv"))
+write.csv(player_blitz, paste0("/path_to_the_folder_you_want_to_save_this_file", PlayerNames[k],"_blitz",".csv"))
 
 
 }
