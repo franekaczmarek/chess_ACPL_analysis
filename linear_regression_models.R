@@ -10,7 +10,7 @@ library(stats)
 rm(list = ls())
 
 #importing file and assigning to 'player' names of players in order that is same as is assigned in 'listcsv' 
-setwd("/Users/franciszekkaczmarek/Desktop/Praca licencjacka/Algorytm/1 Podejście/Dane/Danenaszybko/")
+setwd("set_your_wd")
 listcsv <- dir(pattern = "*.csv")
 listcsv
 player <-c("Aslanov, Sergei", "Carlsen, Magnus", "Ding, Liren", "Dubov, Daniil", "Erigaisi, Arjun",
@@ -19,7 +19,7 @@ player <-c("Aslanov, Sergei", "Carlsen, Magnus", "Ding, Liren", "Dubov, Daniil",
 
 #creating empty data frame
 daneall <-data.frame()
-#assigning boolean values: white=1 black=0
+#loading csv files basen on 'listcsv' into danealland assigning boolean values: white=1 black=0
 for (k in 1:length(listcsv)) {
   dane1 <- read.csv(listcsv[k], header = TRUE)
   
@@ -39,12 +39,12 @@ for (k in 1:length(listcsv)) {
   dane1 <- cbind(ELO, ACPL, OELO, OACPL,kolor)
   dane1 <- as.data.frame(dane1)
   dane1 <- dane1[complete.cases(dane1[,c(3,4)]),]
-  #removing outliers 
+  
   outliers <- boxplot(dane1$ACPL, plot = FALSE)$out
   dane1 <- dane1[ ! dane1$ACPL %in% outliers, ]
   daneall <- rbind.data.frame(daneall, dane1)
 }
-
+#removing outliers 
 outliers <- boxplot(daneall$ACPL, plot = FALSE)$out
 daneall <-daneall[ ! daneall$ACPL %in% outliers, ]
 daneall<- arrange(daneall, daneall$ELO)
