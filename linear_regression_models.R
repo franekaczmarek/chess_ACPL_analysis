@@ -19,7 +19,7 @@ player <-c("Aslanov, Sergei", "Carlsen, Magnus", "Ding, Liren", "Dubov, Daniil",
 
 #creating empty data frame
 daneall <-data.frame()
-#loading csv files basen on 'listcsv' into daneall and assigning boolean values: white=1 black=0
+#loading csv files basen on 'listcsv' into daneall and assigning binary values: white=1 black=0
 for (k in 1:length(listcsv)) {
   dane1 <- read.csv(listcsv[k], header = TRUE)
   
